@@ -2,11 +2,11 @@ require 'gmail'
 require 'feedzirra'
 
 # fetching a single feed
-LAST_MODIFIED_TEST = Time.new(2013, 02, 21)
+LAST_MODIFIED_TEST = Time.new(2013, 04, 10)
 EMAILS_TEST = {"Firenze" => ["Christophe.naud.dulude@gmail.com", "christophe911@hotmail.com"],
 "London" => ["christophe911@hotmail.com"]}
 
-gmail = Gmail.connect('github.drinkup.notifier','')
+gmail = Gmail.connect('github.drinkup.notifier','weekpassword')
 unless gmail.logged_in?
   puts "Wrong Email/Password Combination"
   exit(1)
@@ -14,10 +14,9 @@ end
 feed = Feedzirra::Feed.fetch_and_parse("https://github.com/blog/drinkup.atom")
 
 if feed.last_modified > LAST_MODIFIED_TEST
-  entries = feed.entries
-  entries.take_while{|entry| entry.last_modified > LAST_MODIFIED_TEST}.each do |entry|
-    city = entry.title[/(.*)\s[dD]rinkup/,1] if entry.title =~ /.*\s[dD]rinkup/
-    city = entry.title[/[dD]rinkup\s[iI]n\s(.*)/,1] if entry.title =~ /[dD]rinkup\s[iI]n\s.*/
+    feed.entries.take_while{|entry| entry.last_modified > LAST_MODIFIED_TEST}.each do |entry|
+    city = entry.title[/([a-zA-Z\s]*)\s[dD]rinkup/,1]          if entry.title =~ /.*\s[dD]rinkup/
+    city = entry.title[/[dD]rinkup\s[iI]n\s([a-zA-Z\s]*).*/,1] if entry.title =~ /[dD]rinkup\s[iI]n\s.*/
     next if city.nil?
     if EMAILS_TEST.has_key? city
       emails = EMAILS_TEST[city]
