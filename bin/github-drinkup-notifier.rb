@@ -1,15 +1,14 @@
-$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
-
 require 'gmail'
 require 'feedzirra'
-require 'extend_string'
+require 'yaml'
+require '../lib/extend_string'
 
-# fetching a single feed
 LAST_MODIFIED_TEST = Time.new(2013, 04, 10)
 EMAILS_TEST = {"firenze" => ["Christophe.naud.dulude@gmail.com", "christophe911@hotmail.com"],
 "london" => ["christophe911@hotmail.com"]}
 
-gmail = Gmail.connect('github.drinkup.notifier','weekpassword')
+config = YAML.load_file("../config/config.yaml")
+gmail = Gmail.connect(config['config']['email'],config['config']['password'])
 unless gmail.logged_in?
   puts "Wrong Email/Password Combination"
   exit(1)
@@ -27,8 +26,8 @@ if feed.last_modified > LAST_MODIFIED_TEST
     if EMAILS_TEST.has_key? city
       emails = EMAILS_TEST[city]
       gmail.deliver do
-        to      'github.drinkup.notifier@gmail.com'
-        bcc      emails.join(", ")
+        to      config['config']['email']
+        bcc     emails.join(", ")
         from    'GitHub Drinkup Notifier'
         subject "GitHub Drinkup Notifier : #{city.capitalize}"
         body    "There seems to be a GitHub drinkup if your city!\nMore at #{entry.url}"
