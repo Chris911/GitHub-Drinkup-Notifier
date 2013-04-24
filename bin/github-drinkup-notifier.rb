@@ -17,7 +17,7 @@ if feed.last_modified > LAST_MODIFIED_TEST
   entries = feed.entries
   entries.take_while{|entry| entry.last_modified > LAST_MODIFIED_TEST}.each do |entry|
     city = entry.title[/(.*)\s[dD]rinkup/,1] if entry.title =~ /.*\s[dD]rinkup/
-    city = entry.title[/[dD]rinkup\s[iI]n\s([a-zA-Z]*)/,1] if entry.title =~ /[dD]rinkup\s[iI]n\s.*/
+    city = entry.title[/[dD]rinkup\s[iI]n\s(.*)/,1] if entry.title =~ /[dD]rinkup\s[iI]n\s.*/
     next if city.nil?
     if EMAILS_TEST.has_key? city
       emails = EMAILS_TEST[city]
