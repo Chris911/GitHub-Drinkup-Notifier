@@ -1,10 +1,13 @@
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+
 require 'gmail'
 require 'feedzirra'
+require 'extend_string'
 
 # fetching a single feed
 LAST_MODIFIED_TEST = Time.new(2013, 04, 10)
-EMAILS_TEST = {"Firenze" => ["Christophe.naud.dulude@gmail.com", "christophe911@hotmail.com"],
-"London" => ["christophe911@hotmail.com"]}
+EMAILS_TEST = {"firenze" => ["Christophe.naud.dulude@gmail.com", "christophe911@hotmail.com"],
+"london" => ["christophe911@hotmail.com"]}
 
 gmail = Gmail.connect('github.drinkup.notifier','weekpassword')
 unless gmail.logged_in?
@@ -15,8 +18,11 @@ feed = Feedzirra::Feed.fetch_and_parse("https://github.com/blog/drinkup.atom")
 
 if feed.last_modified > LAST_MODIFIED_TEST
     feed.entries.take_while{|entry| entry.last_modified > LAST_MODIFIED_TEST}.each do |entry|
-    city = entry.title[/([a-zA-Z\s]*)\s[dD]rinkup/,1]          if entry.title =~ /.*\s[dD]rinkup/
-    city = entry.title[/[dD]rinkup\s[iI]n\s([a-zA-Z\s]*).*/,1] if entry.title =~ /[dD]rinkup\s[iI]n\s.*/
+    # String transliteration (Removed accents)
+    title = entry.title.removeaccents.downcase
+    # Match city in blog entry
+    city = title[/([a-zA-Z\s]*)\s[dD]rinkup/,1]          if title =~ /.*\s[dD]rinkup/
+    city = title[/[dD]rinkup\s[iI]n\s([a-zA-Z\s]*).*/,1] if title =~ /[dD]rinkup\s[iI]n\s.*/
     next if city.nil?
     if EMAILS_TEST.has_key? city
       emails = EMAILS_TEST[city]
@@ -24,7 +30,7 @@ if feed.last_modified > LAST_MODIFIED_TEST
         to      'github.drinkup.notifier@gmail.com'
         bcc      emails.join(", ")
         from    'GitHub Drinkup Notifier'
-        subject "GitHub Drinkup Notifier : #{city}"
+        subject "GitHub Drinkup Notifier : #{city.capitalize}"
         body    "There seems to be a GitHub drinkup if your city!\nMore at #{entry.url}"
       end
     end
