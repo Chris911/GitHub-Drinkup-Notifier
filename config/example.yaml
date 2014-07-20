@@ -1,3 +1,14 @@
 config:
-  email: email@gmail.com
-  password: password
+    alerts:
+      - email: email_1@gmail.com
+        cities:
+          - Montreal
+          - Seattle
+          - Portland
+      - email: email_2@gmail.com
+        cities:
+          - Toronto
+          - Vancouver
+    notifier:
+      email: a_gmail_account@gmail.com
+      password: password
